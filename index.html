@@ -80,6 +80,77 @@
         .screen.active { display: flex; animation: floatInFade 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes floatInFade { 0% { opacity: 0; transform: translateY(-16px); } 100% { opacity: 1; transform: translateY(0); } }
 
+        /* ===================== 우측 상단 BGM 버튼 및 볼륨 인터페이스 스타일 ===================== */
+        .bgm-container {
+            position: fixed;
+            top: max(15px, env(safe-area-inset-top, 15px));
+            right: 15px;
+            z-index: 900;
+            display: none; /* 초기 화면에서는 숨김 */
+            align-items: center;
+            gap: 6px;
+        }
+
+        #bgmToggleBtn {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
+            border-radius: var(--radius-s);
+            width: 44px;
+            height: 44px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-soft);
+        }
+        #bgmToggleBtn:hover {
+            background: rgba(212, 175, 55, 0.2);
+            transform: scale(1.05);
+            border-color: var(--accent-color);
+        }
+
+        .volume-slider-wrapper {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-s);
+            height: 44px;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.2s ease;
+        }
+        .volume-slider-wrapper:hover {
+            border-color: var(--accent-color);
+            background: rgba(15, 23, 42, 0.85);
+        }
+        .volume-slider {
+            width: 75px;
+            height: 4px;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
         /* ===================== 시작 화면 ===================== */
         #screen-start { justify-content: center; align-items: center; text-align: center; padding: 24px; position: relative; }
         .start-box {
@@ -165,7 +236,7 @@
         .char-nav-btn { background: var(--box-bg); border: 1px solid var(--border-color); border-radius: 999px; color: var(--text-gray); padding: 9px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: 0.2s; }
         .char-nav-btn.active { background: linear-gradient(135deg, var(--accent-light), var(--accent-color)); color: #17130a; border-color: var(--accent-color); font-weight: 700; }
 
-        /* ===================== 인물 덱 선택 화면 (캐릭터 카드 슬라이드 애니메이션 적용) ===================== */
+        /* ===================== 인물 덱 선택 화면 ===================== */
         .deck-selection-layout {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 100%; position: relative; padding: 20px; overflow: hidden; perspective: 1200px;
@@ -230,7 +301,7 @@
             user-select: none;
         }
 
-        /* ===================== 캐릭터 카드 뷰어 (슬라이드 덱 방식) ===================== */
+        /* ===================== 캐릭터 카드 뷰어 ===================== */
         .char-carousel-wrapper {
             position: relative; width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
@@ -322,6 +393,25 @@
 </head>
 <body>
 
+    <!-- 🎵 오디오 소스 추가 (mp3 파일의 경로를 원하는 파일로 수정해주세요) 🎵 -->
+    <audio id="bgmAudio" loop>
+        <source src="bgm.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="clickSound">
+        <source src="click.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="slideSound">
+        <source src="slide.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 우측 상단 BGM 버튼 및 볼륨 조절 인터페이스 -->
+    <div id="bgmContainer" class="bgm-container">
+        <button id="bgmToggleBtn" onclick="toggleBGM()">🔇</button>
+        <div class="volume-slider-wrapper">
+            <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="1" oninput="changeVolume(this.value)">
+        </div>
+    </div>
+
     <div id="screen-start" class="screen active">
         <div class="start-box">
             <span class="serif-font" style="color: var(--accent-color); font-size: 0.85rem; letter-spacing: 2px;">IMPERIAL ARCHIVES</span>
@@ -405,7 +495,6 @@
                         <div style="background: var(--box-bg); padding: 10px; border: 1px solid var(--border-color);"><strong>[기숙사]</strong><br>학생들의 생활 공간. 학부별 생활 구역이 구분되어 있음.</div>
                         <div style="background: var(--box-bg); padding: 10px; border: 1px solid var(--border-color);"><strong>[실습장]</strong><br>학부별 실습 교육을 위한 시설.</div>
                         <div style="background: var(--box-bg); padding: 10px; border: 1px solid var(--border-color);"><strong>[학생회관]</strong><br>학생회와 학생 자치 활동을 위한 공간.</div>
-                        <div style="background: var(--box-bg); padding: 10px; border: 1px solid var(--border-color);"><strong>[의무실]</strong><br>환자가 실려가는 장소.</div>
                         <div style="background: var(--box-bg); padding: 10px; border: 1px solid var(--border-color);"><strong>[식당]</strong><br>학생과 교직원이 이용하는 공동 식당.</div>
                     </div>
                 </div>
@@ -470,7 +559,7 @@
                 <button class="nav-btn" onclick="slideChar(1)">&#10095;</button>
             </div>
 
-            <!-- 교수진 -->
+            <!-- 교수진 (기존 캐릭터 시트 생략하지 않음) -->
             <div class="char-sheet" data-group="prof">
                 <div class="char-top-layout">
                     <div class="char-thumb-container"><img src="https://raw.githubusercontent.com/q1-p/tm/refs/heads/main/port18.webp" alt="테미 오"></div>
@@ -510,7 +599,7 @@
                     <span class="label">아티팩트</span>
                     <span class="value"><button class="artifact-link" onclick="openArtifactModal('금강의 방패', 'https://raw.githubusercontent.com/q1-p/tm/refs/heads/main/art10.webp', '무구형 양산형 아티팩트(금속 방패). 높은 자가 수복 능력을 지녔다.', '가벼운 무게와 뛰어난 내구성.')">금강의 방패▶</button></span>
                 </div>
-                <div class="char-desc-container"><div class="serif-font char-desc-title">상세 기록</div><div class="char-desc-text">뛰어난 기본기와 균형 잡힌 실력을 갖춘 교수. 엄격하고 공정한 태도를 유지한다.</div></div>
+                <div class="char-desc-container"><div class="serif-font char-desc-title">상세 기록</div><div class="char-desc-text">뛰어난 기본기와 균형 잡문을 갖춘 교수. 엄격하고 공정한 태도를 유지한다.</div></div>
             </div>
 
             <div class="char-sheet" data-group="prof">
@@ -781,7 +870,7 @@
                     <div class="grid-item"><span class="label">나이</span><span class="value">20세</span></div>
                     <div class="grid-item"><span class="label">종족</span><span class="value">인간</span></div>
                     <div class="grid-item"><span class="label">등급</span><span class="value">A</span></div>
-                    <div class="grid-item"><span class="label">성향</span><span class="value">INFJ/4w5/중립 악</span></div>
+                    <div class="grid-item"><span class="label">성향</span><span class="value">INFP/4w5/중립 악</span></div>
                 </div>
                 <div class="char-artifact-row">
                     <span class="label">아티팩트</span>
@@ -807,7 +896,7 @@
                 </div>
                 <div class="char-artifact-row">
                     <span class="label">아티팩트</span>
-                    <span class="value"><button class="artifact-link" onclick="openArtifactModal('파죽', 'https://raw.githubusercontent.com/q1-p/tm/refs/heads/main/art5.webp', '무구형 아티팩트(검은 장창). 어떠한 방어도 꿰뚫는다.', '얼어붙은 마음을 꿰뚫는 검은 창끝이 달빛을 받아 희미한 빛을 발한다.')">파죽▶</button></span>
+                    <span class="value"><button class="artifact-link" onclick="openArtifactModal('파죽', 'https://raw.githubusercontent.com/q1-p/tm/refs/heads/main/art5.webp', '무구형 아티팩트(검은 장창). 어떠한 방어도 꿰뚫는다.', '얼어붙은 마음을 꿰뚫은 검은 창끝이 달빛을 받아 희미한 빛을 발한다.')">파죽▶</button></span>
                 </div>
                 <div class="char-desc-container"><div class="serif-font char-desc-title">상세 기록</div><div class="char-desc-text">라 황실 제2황녀. 감정보다 현실과 효율을 우선하는 성향을 보인다.</div></div>
             </div>
@@ -871,7 +960,7 @@
                 </div>
                 <div class="char-artifact-row">
                     <span class="label">아티팩트</span>
-                    <span class="value"><button class="artifact-link" onclick="openArtifactModal('윈드러너', 'https://raw.githubusercontent.com/q1-p/tm/refs/heads/main/art16.webp', '의복형 아티팩트(녹색 스카프). 착용자의 모든 동작을 크게 가속한다.', '바람을 가르는 녹빛 잔상.')">윈드러너▶</button></span>
+                    <span class="value"><button class="artifact-link" onclick="openArtifactModal('윈드러너', 'https://raw.githubusercontent.com/q1-p/tm/refs/heads/main/art16.webp', '의복형 아티팩트(녹색 스카프). 착용자의 모든 동작을 크게 가속한다.', '녹색 잔상이 바람을 갈랐다.')">윈드러너▶</button></span>
                 </div>
                 <div class="char-desc-container"><div class="serif-font char-desc-title">상세 기록</div><div class="char-desc-text">칼디온 영지 출신의 평민. 뛰어난 친화력과 빠른 눈치를 지닌 낙천가.</div></div>
             </div>
@@ -892,7 +981,7 @@
                 </div>
                 <div class="char-artifact-row">
                     <span class="label">아티팩트</span>
-                    <span class="value"><button class="artifact-link" onclick="openArtifactModal('거울의 회랑', 'https://raw.githubusercontent.com/q1-p/tm/refs/heads/main/art4.webp', '무구형 아티팩트(은빛 단검). 환영 공간을 전개하고 다른 아티팩트를 모방한다.', '수많은 거울상에 비친 자신의 모습은 새롭게 깨어난 의지가 되었다.')">거울의 회랑▶</button></span>
+                    <span class="value"><button class="artifact-link" onclick="openArtifactModal('거울의 회랑', 'https://raw.githubusercontent.com/q1-p/tm/refs/heads/main/art4.webp', '무구형 아티팩트(银빛 단검). 환영 공간을 전개하고 다른 아티팩트를 모방한다.', '수많은 거울상에 비친 자신의 모습은 새롭게 깨어난 의지가 되었다.')">거울의 회랑▶</button></span>
                 </div>
                 <div class="char-desc-container"><div class="serif-font char-desc-title">상세 기록</div><div class="char-desc-text">칼디온 공작가의 차남. 장인 기질과 소탈한 성격을 지녔다.</div></div>
             </div>
@@ -1008,21 +1097,87 @@
     </div>
 
     <script>
+        // ======================= 오디오 및 볼륨 관련 로직 =======================
+        const bgmAudio = document.getElementById('bgmAudio');
+        const clickSound = document.getElementById('clickSound');
+        const slideSound = document.getElementById('slideSound');
+        let isBgmPlaying = false;
+
+        // 초기 볼륨 설정
+        bgmAudio.volume = 1;
+
+        function toggleBGM() {
+            const btn = document.getElementById('bgmToggleBtn');
+            if (isBgmPlaying) {
+                bgmAudio.pause();
+                btn.innerText = '🔇';
+            } else {
+                bgmAudio.play().catch(e => console.log('BGM 자동재생이 차단되었습니다:', e));
+                btn.innerText = '🔊';
+            }
+            isBgmPlaying = !isBgmPlaying;
+        }
+
+        function changeVolume(value) {
+            bgmAudio.volume = value;
+            const btn = document.getElementById('bgmToggleBtn');
+            if (value == 0 && isBgmPlaying) {
+                btn.innerText = '🔇';
+            } else if (value > 0 && !isBgmPlaying) {
+                // 슬라이더 조절 시 자동으로 재생 상태로 전환 가능하도록 처리
+            }
+        }
+
+        // 클릭 효과음
+        function playClickSound() {
+            if(!clickSound.src.endsWith('click.mp3')) {
+                clickSound.currentTime = 0;
+                clickSound.play().catch(e => {});
+            }
+        }
+
+        // 슬라이드 효과음
+        function playSlideSound() {
+            if(!slideSound.src.endsWith('slide.mp3')) {
+                slideSound.currentTime = 0;
+                slideSound.play().catch(e => {});
+            }
+        }
+
+        // 웹사이트 내의 모든 버튼을 클릭할 때 효과음 재생
+        document.addEventListener('click', function(e) {
+            if(e.target.closest('button')) {
+                playClickSound();
+            }
+        });
+
+        // ======================= 기존 스크립트 =======================
         function switchScreen(screenName) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             const headerBar = document.getElementById('app-header-bar');
             const bottomNavBar = document.getElementById('bottomNavBar');
+            const bgmContainer = document.getElementById('bgmContainer');
             
             setTimeout(() => {
                 if (screenName === 'overview') {
                     document.getElementById('screen-overview').classList.add('active');
                     headerBar.style.display = 'block';
                     bottomNavBar.style.display = 'flex';
+                    bgmContainer.style.display = 'flex'; // 컨테이너 표시
                     document.getElementById('headerTitle').innerText = '아카이브';
+                    
+                    // BGM 자동 재생
+                    if (!isBgmPlaying) {
+                        bgmAudio.play().catch(e => console.log('BGM 자동재생이 차단되었습니다:', e));
+                        isBgmPlaying = true;
+                        document.getElementById('bgmToggleBtn').innerText = '🔊';
+                    }
+                    
                 } else if (screenName === 'start') {
                     document.getElementById('screen-start').classList.add('active');
                     headerBar.style.display = 'none';
                     bottomNavBar.style.display = 'none';
+                    bgmContainer.style.display = 'none'; // 컨테이너 숨김
                 }
             }, 10);
             closeDrawer();
@@ -1034,6 +1189,10 @@
             document.getElementById('bottomNavBar').style.display = 'flex';
             document.getElementById('headerTitle').innerText = '아카이브';
             document.getElementById('screen-overview').classList.add('active');
+            
+            const bgmContainer = document.getElementById('bgmContainer');
+            bgmContainer.style.display = 'flex';
+            
             setTimeout(() => {
                 const targetElement = document.getElementById(sectionId);
                 if (targetElement) targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1101,6 +1260,9 @@
             document.getElementById('bottomNavBar').style.display = 'flex';
             document.getElementById('headerTitle').innerText = '인물 열람';
             
+            const bgmContainer = document.getElementById('bgmContainer');
+            bgmContainer.style.display = 'flex';
+            
             setTimeout(() => {
                 document.getElementById('screen-decks').classList.add('active');
                 updateDeckCarousel();
@@ -1120,16 +1282,15 @@
                 if (i === currentDeckIndex) {
                     card.classList.add('active');
                 } else if (i === currentDeckIndex - 1 || (currentDeckIndex === 0 && i === deckCategories.length - 1)) {
-                    // 순환 구조 고려 이전 카드
                     card.classList.add('prev-card');
                 } else if (i === currentDeckIndex + 1 || (currentDeckIndex === deckCategories.length - 1 && i === 0)) {
-                    // 순환 구조 고려 다음 카드
                     card.classList.add('next-card');
                 }
             }
         }
 
         function slideDeckCategory(direction) {
+            playSlideSound(); // 🔊 슬라이드 카드 효과음 재생
             currentDeckIndex += direction;
             if (currentDeckIndex < 0) currentDeckIndex = deckCategories.length - 1;
             if (currentDeckIndex >= deckCategories.length) currentDeckIndex = 0;
@@ -1141,7 +1302,6 @@
             openDeck(cat.id, cat.name);
         }
 
-        // 덱 화면 스와이프 및 마우스 드래그 로직 (PC 및 모바일 지원)
         const deckCarouselArea = document.getElementById('deckCarouselWrapper');
         let deckTouchStartX = 0;
         let isDeckMouseDown = false;
@@ -1184,6 +1344,9 @@
             document.getElementById('app-header-bar').style.display = 'block';
             document.getElementById('bottomNavBar').style.display = 'flex';
             document.getElementById('headerTitle').innerText = titleText;
+            
+            const bgmContainer = document.getElementById('bgmContainer');
+            bgmContainer.style.display = 'flex';
 
             const sheets = document.querySelectorAll('.char-sheet');
             currentCharGroup = [];
@@ -1221,6 +1384,7 @@
 
         function slideChar(direction) {
             if (currentCharGroup.length === 0) return;
+            playSlideSound(); // 🔊 슬라이드 카드 효과음 재생
             currentCharIndex += direction;
             if (currentCharIndex < 0) currentCharIndex = 0;
             if (currentCharIndex >= currentCharGroup.length) currentCharIndex = currentCharGroup.length - 1;
@@ -1258,3 +1422,4 @@
     </script>
 </body>
 </html>
+```[cite: 3]
